@@ -1,15 +1,24 @@
+# R script to create the linear model and generate the function for the Java component of 
+# the submission.  
+
 # Requires package png
 library(png)
 library(arrayhelpers)
+# Set the working directory to the script directory so the image can be found.
 setwd(getSrcDirectory(function(x) {x}))
 png <- readPNG("circle-256.png")
 myarray = array(dim=c(256,256))
+# Transform the PNG into an array
 for( x in 1:256) {
   for( y in 1:256) {
-       myarray[x,y] <-  if(png[x,y,4] < 0.95) 0 else 1;
+    # This image happens to use alpha for the background.  The less-than condition 
+    # is a hold-over from earlier iterations of the script that I left because it works well.
+    myarray[x,y] <-  if(png[x,y,4] < 0.95) 0 else 1;
   }
 }
+# Flatten the array into a data frame with the value of the pixel and the two coordinates as columns
 dat2 <-array2df(myarray)
+# Fit the model. Again, formatting the single line of code as multiple lines to keep it readable
 fit <- lm(myarray ~ 
             d1 + 
             d2 + 
@@ -218,5 +227,6 @@ for(i in seq(2,length(names(cof)),by=2)) {
   if(!is.na(cof[[i]]))   str <- paste0(str, "Math.pow(d1,", power, ") * Double.parseDouble(\"", cof[[i  ]], "\") + \n")
   if(!is.na(cof[[i+1]])) str <- paste0(str, "Math.pow(d2,", power, ") * Double.parseDouble(\"", cof[[i+1]], "\") + \n")
 }
+# Print the coefficients to manually verify against the generated code.
 print(cof)
 cat(str)
